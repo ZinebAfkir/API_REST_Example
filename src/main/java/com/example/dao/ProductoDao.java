@@ -46,14 +46,14 @@ public interface ProductoDao extends JpaRepository<Producto, Long> {
 
    //La siguiente consulta Le digo dame todos los productos con su presentacion
    //La siguiente consulta no la hemos hecho en mysql y luego pegarla, es decir se parece a una consulta de mysql pero no lo es
-   @Query(value = "select  from Producto p left join fetch p.presentacion") //El Query es para mi consulta, siendo Producto es el nombre de mi entidad, mientras que en mysql las tablas se han creado automaticamente como "producto" y "presentacion"
+   @Query(value = "select p from Producto p left join fetch p.presentacion") //El Query es para mi consulta, siendo Producto es el nombre de mi entidad, mientras que en mysql las tablas se han creado automaticamente como "producto" y "presentacion"
 
    public List<Producto> findAll(Sort sort); //la consulta anterior devuelve una lista de productos ordenados
 
   // Segundo metodo: metodo que recupera una pagina de producto, tiene que devolver un page de productos 
 
   //La siguiente consulta es la misma que la anterior pero ahora quiero limitar la cantidad de productos 
-  @Query(value = "select  from Producto p left join fetch p.presentacion",
+  @Query(value = "select p from Producto p left join fetch p.presentacion",
       countQuery = "select count(p) from Producto p left join p.presentacion") 
   public Page<Producto> findAll(Pageable pageable); 
 
@@ -61,7 +61,7 @@ public interface ProductoDao extends JpaRepository<Producto, Long> {
   //Tercer metodo: metodo que recupera un producto por el id(y por tanto que me de su presentacion)
   //dnd el id del producto sea igual al id que yo le paso 
   
-  @Query(value = "select  from Producto p left join fetch p.presentacion where p.id = :id")
+  @Query(value = "select p from Producto p left join fetch p.presentacion where p.id = :id")
   public List<Producto> findById(long id);
 
 
