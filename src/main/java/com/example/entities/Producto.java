@@ -42,7 +42,7 @@ public class Producto implements Serializable {
     @Min(value = 0, message = "El precio no puede ser negativo")
     private double precio;
 
-    @Min(value = 0, message = "Noes estamos quedando sin stock")
+    @Min(value = 0, message = "Nos estamos quedando sin stock")
     private long stock;
 
     //Relacion entre las 2 tablas Producto y Presentacion 
