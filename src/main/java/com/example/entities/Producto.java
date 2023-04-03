@@ -2,6 +2,7 @@ package com.example.entities;
 
 import java.io.Serializable;
 
+import jakarta.annotation.Nonnull;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,6 +46,9 @@ public class Producto implements Serializable {
 
     @Min(value = 0, message = "Nos estamos quedando sin stock")
     private long stock;
+
+    @NotNull
+    private String imagenProducto;
 
     //Relacion entre las 2 tablas Producto y Presentacion 
 
