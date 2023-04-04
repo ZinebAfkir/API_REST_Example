@@ -8,12 +8,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
@@ -31,10 +34,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.entities.Producto;
+import com.example.model.FileUploadResponse;
 import com.example.services.ProductoService;
+import com.example.utilities.FileDownloadUtil;
 import com.example.utilities.FileUploadUtil;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 
 @RestController //Para que todas las peticiones que devuelva sea JSON 
@@ -42,17 +48,22 @@ import jakarta.validation.Valid;
 //será una petición u otra 
 
 @RequestMapping("/productos") //Va gestionar o responder al recurso producto 
+@RequiredArgsConstructor //para cuando queremos inyectar dependencias usando constructores
 
 public class ProductoController {
     
     // Posteriormente a la capa de servicios quiero que me devuelva una lista de productos 
 
     //Quiero un metodo que me devuelva una lista de productos con paginacion o no
-    @Autowired
+    @Autowired 
     private ProductoService productoService;
 
-    @Autowired
+    @Autowired //insertamos dependencia con el @Autowired
     private FileUploadUtil fileUploadUtil;
+
+    //Tambien podemos inyectar una dependencia usando un constructor
+
+    private final FileDownloadUtil fileDownloadUtil;
 
     /**
      * El metodo siguiente va a responder a una peticion (request) del tipo: 
@@ -197,6 +208,16 @@ public class ProductoController {
        String fileCode = fileUploadUtil.saveFile(file.getOriginalFilename(), file);
        producto.setImagenProducto(fileCode+ "-" + file.getOriginalFilename());
     
+       //Devolver informacion respecto al file recibido 
+
+       FileUploadResponse fileUploadResponse = FileUploadResponse
+       .builder()
+       .fileName(fileCode+ "-" + file.getOriginalFilename())
+        .downloadURI("/productos/downloadFile/" + fileCode + "-" + file.getOriginalFilename()) //La URI para descargar el archivo
+        .size(file.getSize())      
+        .build();        
+
+        responseAsMap.put("info de la imagen:" , fileUploadResponse);
     }
 
     Producto productoDB = productoService.save(producto);
@@ -317,11 +338,38 @@ public class ProductoController {
         }
         
         return responseEntity;
-        
-        
-       
+           
     }
 
+    //Hace uso de la clase fileUploadResponse
+
+     /**
+     *  Implementa filedownnload end point API 
+     **/    
+    @GetMapping("/downloadFile/{fileCode}")
+    public ResponseEntity<?> downloadFile(@PathVariable(name = "fileCode") String fileCode) {
+
+        Resource resource = null;
+
+        try {
+            resource = fileDownloadUtil.getFileAsResource(fileCode);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+
+        if (resource == null) {
+            return new ResponseEntity<>("File not found ", HttpStatus.NOT_FOUND);
+        }
+
+        String contentType = "application/octet-stream";
+        String headerValue = "attachment; filename=\"" + resource.getFilename() + "\"";
+
+        return ResponseEntity.ok()
+        .contentType(MediaType.parseMediaType(contentType))
+        .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
+        .body(resource);// el el body manda el churro de byte que se ha generado anteriormente
+
+    }
 
 
 

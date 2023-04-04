@@ -45,4 +45,6 @@ public class Presentacion implements Serializable {
     @JsonIgnore // eso es para evitar recursividad entre producto y presentación (cuando pides producto llama a presentación,
     // y cuado pides presnetacion llama a producto y asi de forma recursiva por eso metemos el @Json)
     private List<Producto> productos;
+
+    
 }
